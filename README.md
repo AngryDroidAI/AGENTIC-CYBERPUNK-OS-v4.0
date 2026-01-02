@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AGENTIC CYBERPUNK OS v4.0 - FULL LIBRARY</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;500;700&display=swap');
+    
+    :root {
+      --neon-pink: #ff00ff;
+      --neon-cyan: #00ffff;
+      --neon-green: #00ff00;
+      --neon-purple: #9d00ff;
+      --neon-orange: #ff7700;
+      --neon-yellow: #ffff00;
+      --neon-red: #ff3366;
+      --dark-bg: #0a0a14;
+      --darker-bg: #050510;
+      --glass: rgba(10, 15, 30, 0.85);
+      --border-glow: 0 0 10px;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      scrollbar-width: thin;
+      scrollbar-color: var(--neon-cyan) var(--darker-bg);
+    }
+    
+    body {
+      background-color: #000;
+      color: var(--neon-cyan);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      overflow: hidden;
+      height: 100vh;
+      perspective: 1000px;
+      cursor: crosshair;
+    }
+    
+    /* === CRT EFFECTS === */
+    #crt-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 2px, 3px 100%;
+      animation: flicker 0.15s infinite;
+    }
+    
+    #crt-vignette {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9998;
+      background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
+    }
+
+    /* === BACKGROUND === */
+    #neural-bg {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #0b0b1a 0%, #000 100%);
+      z-index: -10;
+    }
+
+    #neural-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.4;
+    }
+
+    /* === UI COMPONENTS === */
+    .cyber-panel {
+      background: var(--glass);
+      border: 1px solid var(--neon-cyan);
+      border-radius: 4px;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+      backdrop-filter: blur(5px);
+      color: var(--neon-cyan);
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .cyber-panel.pink { border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 255, 0.2); }
+    .cyber-panel.green { border-color: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); }
+    .cyber-panel.purple { border-color: var(--neon-purple); color: var(--neon-purple); box-shadow: 0 0 15px rgba(157, 0, 255, 0.2); }
+    .cyber-panel.red { border-color: var(--neon-red); color: var(--neon-red); box-shadow: 0 0 15px rgba(255, 51, 102, 0.2); }
+
+    /* === CONSOLE === */
+    #agent-console {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 450px;
+      height: 300px;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transition: transform 0.3s;
+    }
+
+    .panel-header {
+      background: rgba(0, 255, 255, 0.1);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--neon-cyan);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: move;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    #console-output {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .log-entry { margin-bottom: 4px; opacity: 0; animation: fadeIn 0.2s forwards; }
+    .log-entry span.time { color: var(--neon-purple); margin-right: 8px; }
+    .log-entry span.source { color: var(--neon-yellow); font-weight: bold; margin-right: 5px; }
+
+    #console-input-area {
+      display: flex;
+      border-top: 1px solid var(--neon-cyan);
+    }
+    
+    #console-input-area input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--neon-green);
+      padding: 10px;
+      font-family: 'Share Tech Mono', monospace;
+      outline: none;
+    }
+
+    /* === AGENT PANEL === */
+    #agent-status-panel {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 300px;
+      max-height: 250px;
+      display: flex;
+      flex-direction: column;
+      z-index: 90;
+    }
+
+    .agent-row {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid rgba(157, 0, 255, 0.2);
+      font-size: 12px;
+    }
+
+    .agent-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #333;
+      margin-right: 10px;
+      box-shadow: 0 0 5px #333;
+      transition: all 0.3s;
+    }
+
+    .agent-status-dot.active {
+      background: var(--neon-green);
+      box-shadow: 0 0 8px var(--neon-green);
+      animation: pulse 1s infinite;
+    }
+
+    /* === COMM VISUALIZER === */
+    #comm-viz {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 300px;
+      height: 150px;
+      z-index: 90;
+    }
+    
+    #comm-canvas {
+      width: 100%;
+      height: calc(100% - 30px);
+      background: rgba(0,0,0,0.5);
+    }
+
+    /* === DESKTOP & TASKBAR === */
+    #desktop-area {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 40px);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 20px;
+    }
+
+    .desktop-icon {
+      width: 80px;
+      height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .desktop-icon:hover {
+      background: rgba(0, 255, 255, 0.1);
+      border: 1px solid var(--neon-cyan);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    }
+
+    .icon-glyph { font-size: 32px; margin-bottom: 5px; filter: drop-shadow(0 0 5px currentColor); }
+    .icon-label { font-size: 10px; font-family: 'Share Tech Mono', text-shadow: 0 0 3px #000; line-height: 1.1; }
+
+    #taskbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 40px;
+      background: var(--glass);
+      border-top: 1px solid var(--neon-pink);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      z-index: 2000;
+      box-shadow: 0 -5px 20px rgba(255, 0, 255, 0.1);
+    }
+
+    #start-btn {
+      background: var(--neon-pink);
+      color: #fff;
+      border: none;
+      padding: 5px 15px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: bold;
+      cursor: pointer;
+      margin-right: 15px;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px var(--neon-pink);
+    }
+
+    #start-btn:hover { background: #ff33ff; }
+
+    .taskbar-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--neon-cyan);
+      padding: 3px 10px;
+      margin-right: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      min-width: 100px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .taskbar-item:hover { background: rgba(0, 255, 255, 0.2); }
+    .taskbar-item.active { background: rgba(0, 255, 255, 0.4); border-bottom: 2px solid var(--neon-cyan); }
+
+    #clock {
+      margin-left: auto;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 16px;
+      color: var(--neon-green);
+    }
+
+    /* === WINDOW SYSTEM === */
+    .os-window {
+      position: absolute;
+      width: 800px;
+      height: 500px;
+      background: var(--dark-bg);
+      border: 1px solid var(--neon-orange);
+      box-shadow: 0 0 20px rgba(255, 119, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      opacity: 0;
+      transform: scale(0.95);
+      animation: popIn 0.3s forwards;
+    }
+
+    .window-header {
+      height: 35px;
+      background: linear-gradient(90deg, rgba(255, 119, 0, 0.2), rgba(255, 0, 255, 0.1));
+      border-bottom: 1px solid var(--neon-orange);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      cursor: move;
+    }
+
+    .window-title { font-family: 'Orbitron'; font-size: 14px; color: var(--neon-orange); text-shadow: 0 0 5px var(--neon-orange); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .window-controls { display: flex; gap: 5px; flex-shrink: 0; }
+    .win-btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
+    .win-close { background: var(--neon-red); }
+    .win-min { background: var(--neon-yellow); }
+    .win-max { background: var(--neon-green); }
+
+    .window-content { flex: 1; position: relative; overflow: hidden; }
+    .window-content iframe { width: 100%; height: 100%; border: none; background: #fff; }
+
+    /* === START MENU === */
+    #start-menu {
+      position: absolute;
+      bottom: 40px;
+      left: 0;
+      width: 350px;
+      max-height: 80vh;
+      background: rgba(5, 5, 10, 0.95);
+      border: 1px solid var(--neon-pink);
+      border-bottom: none;
+      display: none;
+      flex-direction: column;
+      z-index: 3000;
+      box-shadow: 10px 10px 30px rgba(0,0,0,0.8);
+      animation: slideUp 0.2s ease-out;
+      overflow: hidden;
+    }
+
+    #start-menu-scroll {
+      overflow-y: auto;
+      flex: 1;
+      padding-bottom: 10px;
+    }
+
+    .menu-category {
+      padding: 5px 15px;
+      background: rgba(255, 0, 255, 0.1);
+      color: var(--neon-pink);
+      font-family: 'Orbitron';
+      font-size: 11px;
+      letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255, 0, 255, 0.3);
+      margin-top: 5px;
+    }
+
+    .menu-item {
+      padding: 8px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      transition: background 0.2s;
+      font-size: 13px;
+    }
+    
+    .menu-item:hover { background: rgba(255, 0, 255, 0.2); padding-left: 20px; }
+    .menu-item span.icon { margin-right: 10px; font-size: 16px; width: 20px; text-align: center; }
+
+    /* === NOTIFICATIONS === */
+    #notification-area {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .notification {
+      background: rgba(0, 0, 0, 0.9);
+      border: 1px solid var(--neon-cyan);
+      padding: 10px 20px;
+      border-radius: 4px;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+      animation: slideDown 0.3s ease-out;
+      min-width: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* === ANIMATIONS === */
+    @keyframes flicker {
+      0% { opacity: 0.95; }
+      5% { opacity: 0.85; }
+      10% { opacity: 0.95; }
+      100% { opacity: 0.95; }
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.5; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0.5; transform: scale(0.9); }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    
+    @keyframes popIn { to { opacity: 1; transform: scale(1); } }
+    
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- VISUAL LAYERS -->
+  <div id="crt-overlay"></div>
+  <div id="crt-vignette"></div>
+  <div id="neural-bg">
+    <canvas id="neural-canvas"></canvas>
+  </div>
+
+  <!-- UI: NOTIFICATIONS -->
+  <div id="notification-area"></div>
+
+  <!-- UI: CONSOLE -->
+  <div id="agent-console" class="cyber-panel">
+    <div class="panel-header">
+      <span>System Log // Agent_v4.0</span>
+      <span style="font-size: 10px; opacity: 0.7;">LIVE</span>
+    </div>
+    <div id="console-output">
+      <!-- Logs appear here -->
+    </div>
+    <div id="console-input-area">
+      <span style="padding: 10px; color: var(--neon-green);">&gt;</span>
+      <input type="text" id="cmd-input" placeholder="Enter command..." autocomplete="off">
+    </div>
+  </div>
+
+  <!-- UI: AGENT STATUS -->
+  <div id="agent-status-panel" class="cyber-panel purple">
+    <div class="panel-header" style="background: rgba(157,0,255,0.1); border-color: var(--neon-purple);">
+      <span>Autonomous Agents</span>
+      <span id="agent-count" style="font-size: 10px;">0 ACTIVE</span>
+    </div>
+    <div id="agent-list">
+      <!-- Agents injected via JS -->
+    </div>
+  </div>
+
+  <!-- UI: COMM VISUALIZER -->
+  <div id="comm-viz" class="cyber-panel red">
+    <div class="panel-header" style="background: rgba(255,51,102,0.1); border-color: var(--neon-red); font-size: 10px;">
+      Inter-App Traffic
+    </div>
+    <canvas id="comm-canvas"></canvas>
+  </div>
+
+  <!-- MAIN OS DESKTOP -->
+  <div id="desktop-area">
+    <!-- Desktop Icons Injected Here -->
+  </div>
+
+  <!-- WINDOWS CONTAINER -->
+  <div id="windows-container"></div>
+
+  <!-- START MENU -->
+  <div id="start-menu" class="cyber-panel pink">
+    <div class="panel-header" style="background: rgba(255,0,255,0.1); border-color: var(--neon-pink);">
+      AngryDroid Database
+    </div>
+    <div id="start-menu-scroll">
+      <!-- Menu items injected here -->
+    </div>
+  </div>
+
+  <!-- TASKBAR -->
+  <div id="taskbar">
+    <button id="start-btn">Start</button>
+    <div id="taskbar-apps">
+      <!-- Active apps here -->
+    </div>
+    <div id="clock">00:00:00</div>
+  </div>
+
+  <script>
+    /* ============================
+       DATA & CONFIG - FULL LIBRARY
+       ============================ */
+    const APPS = [
+      // --- CORE & SYSTEM ---
+      { id: 'angrydroid', name: 'AngryDroid Main', url: 'https://angrydroid.neocities.org/angrydroidwebsite/', icon: '🌀', color: '#ff00ff', category: 'System', favorite: true },
+      { id: 'crt', name: 'CRT Effect', url: 'https://angrydroid.neocities.org/crt/', icon: '📺', color: '#00ff00', category: 'System' },
+      { id: 'retro-os', name: '70s CRT OS', url: 'https://angrydroid.neocities.org/retro_70s_crt_%20oS/', icon: '📟', color: '#ffaa00', category: 'System' },
+      { id: 'web-ring', name: 'Web Ring', url: 'https://angrydroid.neocities.org/web_ring/', icon: '🔗', color: '#ffffff', category: 'System' },
+
+      // --- AI & LABS ---
+      { id: 'angry-ai', name: 'Angry AI', url: 'https://angrydroid.neocities.org/angry_ai/', icon: '🤖', color: '#ff3366', category: 'AI Labs', favorite: true },
+      { id: 'neural-browser', name: 'Neural Browser', url: 'https://angrydroid.neocities.org/neural_browser/', icon: '🧠', color: '#9d00ff', category: 'AI Labs' },
+      { id: 'neural-chat', name: 'Neural Chat', url: 'https://angrydroid.neocities.org/neural_chat/', icon: '💬', color: '#9d00ff', category: 'AI Labs' },
+      { id: 'ai-lab', name: 'AngryDroid AI Lab', url: 'https://angrydroid.neocities.org/angrydroid_ai_lab/', icon: '🧪', color: '#00ffff', category: 'AI Labs' },
+      { id: 'fungal', name: 'Fungal Evolution', url: 'https://angrydroid.neocities.org/fungal_evolution_research_suite/', icon: '🍄', color: '#00ff00', category: 'AI Labs' },
+      { id: 'wormhole', name: 'Quantum Wormhole', url: 'https://angrydroid.neocities.org/quantum_wormhole_simulation_lab/', icon: '⭕', color: '#9d00ff', category: 'AI Labs' },
+      { id: 'multiverse', name: 'Multiverse Lab', url: 'https://angrydroid.neocities.org/multiverse_ai_research_lab/', icon: '🌌', color: '#00ffff', category: 'AI Labs' },
+      { id: 'rf-anomaly', name: 'RF Anomaly Det.', url: 'https://angrydroid.neocities.org/rf_%20anomaly_detection_system/', icon: '📡', color: '#ffaa00', category: 'AI Labs' },
+      { id: 'med-lab', name: 'Medical AI Lab', url: 'https://angrydroid.neocities.org/ai_medical_research_lab/', icon: '🩺', color: '#ff3366', category: 'AI Labs' },
+      { id: 'omni-synth', name: 'Omni Synthesis', url: 'https://angrydroid.neocities.org/omni_synthesis_ai-laboratory/', icon: '⚗️', color: '#00ff00', category: 'AI Labs' },
+      { id: 'super-ai', name: 'Superint. Sim', url: 'https://angrydroid.neocities.org/ai_superintelligence_outcome_simulator/', icon: '🔮', color: '#ff00ff', category: 'AI Labs' },
+      { id: 'chronos', name: 'Project Chronos', url: 'https://angrydroid.neocities.org/project_chronos/', icon: '⏳', color: '#ffff00', category: 'AI Labs' },
+      { id: 'blackbox', name: 'Black Box', url: 'https://angrydroid.neocities.org/blackbox/', icon: '📦', color: '#000000', category: 'AI Labs' },
+      { id: 'teach-sim', name: 'Teacher Sim', url: 'https://angrydroid.neocities.org/ai_teacher_training_simulator/', icon: '🎓', color: '#ffff00', category: 'AI Labs' },
+
+      // --- DEVELOPMENT ---
+      { id: 'coder', name: 'Code Matrix', url: 'https://angrydroid.neocities.org/coder/', icon: '💻', color: '#00ff00', category: 'Dev Tools', favorite: true },
+      { id: 'html-instruct', name: 'HTML Instruct', url: 'https://angrydroid.neocities.org/html_instruct/index.HTML', icon: '📄', color: '#ffffff', category: 'Dev Tools' },
+      { id: 'compat-tester', name: 'Compat. Tester', url: 'https://angrydroid.neocities.org/website_compatibility_tester/', icon: '🛠️', color: '#ffaa00', category: 'Dev Tools' },
+      { id: 'code-repo', name: 'Code Repository', url: 'https://angrydroid.neocities.org/code_repository_blog/repository%20project', icon: '🗂️', color: '#00ffff', category: 'Dev Tools' },
+      { id: 'qwens-web', name: "Qwen's Web", url: 'https://angrydroid.neocities.org/qwens_web/', icon: '🌐', color: '#ffffff', category: 'Dev Tools' },
+
+      // --- CAPSULES & SPACES ---
+      { id: 'capsule-builder', name: 'Capsule Builder', url: 'https://angrydroid.neocities.org/mythic_capsule_builder/', icon: '🔮', color: '#ff00ff', category: 'Mythic Space' },
+      { id: 'capsule-pro', name: 'Capsule Pro', url: 'https://angrydroid.neocities.org/mythic-capsule-pro/', icon: '🧿', color: '#ff00ff', category: 'Mythic Space', favorite: true },
+      { id: 'mythic-space', name: 'Mythic Space', url: 'https://angrydroid.neocities.org/mythic_space/', icon: '🚀', color: '#00ffff', category: 'Mythic Space' },
+      { id: 'neon-skies', name: 'Neon Skies', url: 'https://angrydroid.neocities.org/galactic_mahem_neon_skies/', icon: '🌃', color: '#ff00ff', category: 'Mythic Space' },
+      { id: 'mythicos', name: 'Mythicos', url: 'https://angrydroid.neocities.org/mythicos/', icon: '🏝️', color: '#00ff00', category: 'Mythic Space' },
+      { id: 'virtual-cafe', name: 'Virtual Cafe', url: 'https://angrydroid.neocities.org/mythic_virtual_cafe/', icon: '☕', color: '#ffaa00', category: 'Mythic Space' },
+
+      // --- CREATIVE SUITE ---
+      { id: 'pixel-editor', name: 'Pixel Shrine Ed.', url: 'https://angrydroid.neocities.org/pixel%20art%20shrine%20editor/', icon: '👾', color: '#00ff00', category: 'Creative' },
+      { id: 'sticker-maker', name: 'Sticker Maker', url: 'https://angrydroid.neocities.org/mythic_sticker_maker/', icon: '⭐', color: '#ffff00', category: 'Creative' },
+      { id: 'watermark', name: 'Watermark Maker', url: 'https://angrydroid.neocities.org/watermark_maker/', icon: '©️', color: '#ffffff', category: 'Creative' },
+      { id: 'gallery', name: 'Gallery Shrine', url: 'https://angrydroid.neocities.org/gallery_shrine/', icon: '🖼️', color: '#00ffff', category: 'Creative' },
+      { id: 'fortune-fairy', name: 'Fortune Fairy', url: 'https://angrydroid.neocities.org/fortune_fairy/', icon: '🧚', color: '#ff00ff', category: 'Creative' },
+      { id: 'glitch-purge', name: 'Glitch Purge', url: 'https://angrydroid.neocities.org/glitch_purge/', icon: '⚡', color: '#ff0000', category: 'Creative' },
+
+      // --- MEDIA & AUDIO ---
+      { id: 'media-player', name: 'Media Player', url: 'https://angrydroid.neocities.org/mythic_media_player/media_player', icon: '🎵', color: '#ffff00', category: 'Media', favorite: true },
+      { id: 'beatbox', name: 'Mythic Beatbox', url: 'https://angrydroid.neocities.org/mythic_beatbox/', icon: '🥁', color: '#ff00ff', category: 'Media' },
+      { id: 'piano', name: 'Keyboard Piano', url: 'https://angrydroid.neocities.org/keyboard_piano/index.html', icon: '🎹', color: '#ffffff', category: 'Media' },
+      { id: 'oscillograph', name: 'Oscillograph 77', url: 'https://angrydroid.neocities.org/sonic_oscillograph77/', icon: '📊', color: '#00ff00', category: 'Media' },
+
+      // --- UTILITIES ---
+      { id: 'chat', name: 'Chat', url: 'https://angrydroid.neocities.org/chat/', icon: '💬', color: '#00ffff', category: 'Utilities' },
+      { id: 'calendar', name: 'Mythic Calendar', url: 'https://angrydroid.neocities.org/mythic_calendar/', icon: '📅', color: '#ffaa00', category: 'Utilities' },
+      { id: 'calculator', name: 'Mythic Calculator', url: 'https://angrydroid.neocities.org/mythic_Calculator%20/', icon: '🧮', color: '#ffffff', category: 'Utilities' },
+      { id: 'notepad', name: 'Mythic Notepad', url: 'https://angrydroid.neocities.org/mythic_notepad/', icon: '📝', color: '#ffff00', category: 'Utilities' },
+      { id: 'worldmap', name: 'World Map', url: 'https://angrydroid.neocities.org/worldmap/', icon: '🗺️', color: '#00ff00', category: 'Utilities' },
+      { id: 'pass-gen', name: 'Password Gen', url: 'https://angrydroid.neocities.org/passwordgenrator/', icon: '🔑', color: '#ff3366', category: 'Utilities' },
+      { id: 'vault', name: 'Vault Uplink', url: 'https://angrydroid.neocities.org/mythic_vault_uplink/', icon: '🔒', color: '#9d00ff', category: 'Utilities' },
+      { id: 'mythic-pet', name: 'Mythic Pet', url: 'https://angrydroid.neocities.org/mythic%20pet/', icon: '🐾', color: '#ff00ff', category: 'Utilities' },
+
+      // --- SECURITY ---
+      { id: 'security', name: 'Security Scanner', url: 'https://angrydroid.neocities.org/securityscanner/', icon: '🛡️', color: '#ff3366', category: 'Security', favorite: true },
+      { id: 'sec-wizard', name: 'Security Wizard', url: 'https://angrydroid.neocities.org/security_wizard/', icon: '🧙', color: '#9d00ff', category: 'Security' },
+      { id: 'matrix-encrypt', name: 'Matrix Encryptor', url: 'https://angrydroid.neocities.org/matrix_encryptor/', icon: '🔐', color: '#00ff00', category: 'Security' },
+      { id: 'mythic-radar', name: 'Mythic Radar', url: 'https://angrydroid.neocities.org/mythic_radar/', icon: '📡', color: '#00ffff', category: 'Security' },
+      { id: 'swamp-blog', name: 'Swamp Blog', url: 'https://angrydroid.neocities.org/swamp_blog/', icon: '🐸', color: '#00ff00', category: 'Security' },
+
+      // --- GAMES ---
+      { id: 'wizards-escape', name: "Wizard's Escape", url: 'https://angrydroid.neocities.org/wizards_escape/', icon: '🧙‍♂️', color: '#9d00ff', category: 'Games' },
+      { id: 'tag-it', name: 'Tag It', url: 'https://angrydroid.neocities.org/tag_it/', icon: '🏷️', color: '#ffff00', category: 'Games' }
+    ];
+
+    const AGENTS = [
+      { id: 'coord', name: 'Coordinator', desc: 'Orchestrates system workflow', active: true },
+      { id: 'sec', name: 'Sentinel', desc: 'Monitors external connections', active: false },
+      { id: 'data', name: 'Miner', desc: 'Extracts usage patterns', active: true },
+      { id: 'ui', name: 'Interface', desc: 'Optimizes display rendering', active: true }
+    ];
+
+    /* ============================
+       STATE MANAGEMENT
+       ============================ */
+    const state = {
+      windows: {}, // id -> DOMElement
+      zIndex: 100,
+      activeApp: null,
+      startTime: Date.now()
+    };
+
+    /* ============================
+       CORE FUNCTIONS
+       ============================ */
+    
+    function init() {
+      initClock();
+      initDesktop();
+      initMenu();
+      initAgents();
+      initNeuralBg();
+      initCommViz();
+      
+      logSystem("Agent OS v4.0 Initialized.", "system");
+      logSystem(`Library Loaded: ${APPS.length} Modules.`, "network");
+      notify("System Online", "54 Modules Detected. Autonomous Agents Standing By.");
+
+      // Start Agent Behavior Loop
+      setInterval(agentLoop, 5000);
+    }
+
+    /* --- UI Generators --- */
+    function initDesktop() {
+      const desk = document.getElementById('desktop-area');
+      // Only show favorites on desktop
+      const favoriteApps = APPS.filter(app => app.favorite);
+      
+      favoriteApps.forEach(app => {
+        const el = document.createElement('div');
+        el.className = 'desktop-icon';
+        el.innerHTML = `
+          <div class="icon-glyph" style="color:${app.color}">${app.icon}</div>
+          <div class="icon-label">${app.name}</div>
+        `;
+        el.onclick = () => openApp(app.id);
+        desk.appendChild(el);
+      });
+    }
+
+    function initMenu() {
+      const list = document.getElementById('start-menu-scroll');
+      
+      // Group by Category
+      const categories = [...new Set(APPS.map(a => a.category))];
+      
+      categories.forEach(cat => {
+        const catHeader = document.createElement('div');
+        catHeader.className = 'menu-category';
+        catHeader.innerText = `/// ${cat.toUpperCase()}`;
+        list.appendChild(catHeader);
+
+        const appsInCat = APPS.filter(a => a.category === cat);
+        appsInCat.forEach(app => {
+          const el = document.createElement('div');
+          el.className = 'menu-item';
+          el.innerHTML = `<span class="icon">${app.icon}</span> ${app.name}`;
+          el.onclick = () => {
+            openApp(app.id);
+            toggleMenu();
+          };
+          list.appendChild(el);
+        });
+      });
+
+      document.getElementById('start-btn').onclick = toggleMenu;
+      // Close menu if clicking outside
+      document.addEventListener('click', (e) => {
+        const menu = document.getElementById('start-menu');
+        const btn = document.getElementById('start-btn');
+        if (!menu.contains(e.target) && !btn.contains(e.target) && menu.style.display === 'flex') {
+          menu.style.display = 'none';
+        }
+      });
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById('start-menu');
+      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function initAgents() {
+      const list = document.getElementById('agent-list');
+      let activeCount = 0;
+      AGENTS.forEach(agent => {
+        if(agent.active) activeCount++;
+        const el = document.createElement('div');
+        el.className = 'agent-row';
+        el.innerHTML = `
+          <div class="agent-status-dot ${agent.active ? 'active' : ''}"></div>
+          <div style="flex:1">
+            <div style="color:var(--neon-purple); font-weight:bold;">${agent.name}</div>
+            <div style="font-size:10px; opacity:0.7;">${agent.desc}</div>
+          </div>
+        `;
+        list.appendChild(el);
+      });
+      document.getElementById('agent-count').innerText = `${activeCount} ACTIVE`;
+    }
+
+    function initClock() {
+      const update = () => {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', {hour12: false});
+      };
+      setInterval(update, 1000);
+      update();
+    }
+
+    /* --- Window Management --- */
+    function openApp(appId) {
+      // If already open, focus
+      if (state.windows[appId]) {
+        focusWindow(appId);
+        return;
+      }
+
+      const app = APPS.find(a => a.id === appId);
+      if (!app) return;
+
+      // Create Window
+      const win = document.createElement('div');
+      win.className = 'os-window';
+      win.id = `win-${appId}`;
+      win.style.borderColor = app.color;
+      win.style.left = `${50 + (Object.keys(state.windows).length * 30)}px`;
+      win.style.top = `${50 + (Object.keys(state.windows).length * 30)}px`;
+      
+      win.innerHTML = `
+        <div class="window-header">
+          <span class="window-title">${app.icon} ${app.name}</span>
+          <div class="window-controls">
+            <div class="win-btn win-min" title="Minimize"></div>
+            <div class="win-btn win-max" title="Maximize"></div>
+            <div class="win-btn win-close" onclick="closeWindow('${appId}')" title="Close"></div>
+          </div>
+        </div>
+        <div class="window-content">
+          <iframe src="${app.url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        </div>
+      `;
+
+      // Header interaction
+      const header = win.querySelector('.window-header');
+      makeDraggable(win, header);
+
+      // Min/Max logic
+      win.querySelector('.win-min').onclick = () => {
+        win.style.display = 'none';
+      };
+      win.querySelector('.win-max').onclick = () => {
+        if(win.style.width === '100%') {
+          win.style.width = '800px';
+          win.style.height = '500px';
+          win.style.top = '100px';
+          win.style.left = '100px';
+        } else {
+          win.style.width = '100%';
+          win.style.height = 'calc(100% - 40px)';
+          win.style.top = '0';
+          win.style.left = '0';
+        }
+      };
+
+      win.onmousedown = () => focusWindow(appId);
+
+      document.getElementById('windows-container').appendChild(win);
+      state.windows[appId] = win;
+      
+      addToTaskbar(appId, app);
+      focusWindow(appId);
+      
+      logSystem(`Application launched: ${app.name}`, "os");
+      
+      // Agent reaction
+      triggerAgentEvent('coord', `App ${app.name} launched. Optimizing resources.`);
+    }
+
+    function closeWindow(appId) {
+      const win = state.windows[appId];
+      if (win) {
+        win.remove();
+        delete state.windows[appId];
+        removeFromTaskbar(appId);
+        logSystem(`Process terminated: ${appId}`, "os");
+      }
+    }
+
+    function focusWindow(appId) {
+      const win = state.windows[appId];
+      if (!win) return;
+      state.zIndex++;
+      win.style.zIndex = state.zIndex;
+      state.activeApp = appId;
+      
+      // Update taskbar
+      document.querySelectorAll('.taskbar-item').forEach(el => el.classList.remove('active'));
+      const taskItem = document.querySelector(`.taskbar-item[data-id="${appId}"]`);
+      if (taskItem) taskItem.classList.add('active');
+    }
+
+    function makeDraggable(element, handle) {
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      handle.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        element.style.top = (element.offsetTop - pos2) + "px";
+        element.style.left = (element.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+
+    function addToTaskbar(appId, app) {
+      const bar = document.getElementById('taskbar-apps');
+      const el = document.createElement('div');
+      el.className = 'taskbar-item';
+      el.dataset.id = appId;
+      el.innerHTML = `<span style="margin-right:5px">${app.icon}</span> ${app.name}`;
+      el.onclick = () => {
+        const win = state.windows[appId];
+        if (win.style.display === 'none') {
+          win.style.display = 'flex';
+          focusWindow(appId);
+        } else if (state.activeApp === appId) {
+          win.style.display = 'none';
+        } else {
+          focusWindow(appId);
+        }
+      };
+      bar.appendChild(el);
+    }
+
+    function removeFromTaskbar(appId) {
+      const el = document.querySelector(`.taskbar-item[data-id="${appId}"]`);
+      if (el) el.remove();
+    }
+
+    /* --- Console & Logging --- */
+    function logSystem(msg, source) {
+      const consoleEl = document.getElementById('console-output');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      
+      const time = new Date().toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+      
+      let color = 'var(--neon-cyan)';
+      if(source === 'agent') color = 'var(--neon-purple)';
+      if(source === 'security') color = 'var(--neon-red)';
+      
+      entry.innerHTML = `<span class="time">[${time}]</span> <span class="source" style="color:${color}">${source.toUpperCase()}:</span> ${msg}`;
+      consoleEl.appendChild(entry);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    document.getElementById('cmd-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const val = e.target.value.trim();
+        if (val) {
+          logSystem(val, 'user');
+          processCommand(val);
+          e.target.value = '';
+        }
+      }
+    });
+
+    function processCommand(cmd) {
+      const parts = cmd.toLowerCase().split(' ');
+      if (parts[0] === 'help') {
+        logSystem("Commands: open [id], close [id], clear, scan, agents", "system");
+      } else if (parts[0] === 'open') {
+        const app = APPS.find(a => a.id === parts[1]);
+        if (app) openApp(app.id);
+        else logSystem("App not found.", "system");
+      } else if (parts[0] === 'clear') {
+        document.getElementById('console-output').innerHTML = '';
+      } else if (parts[0] === 'scan') {
+        logSystem("Initiating deep system scan...", "security");
+        setTimeout(() => logSystem("Scan complete. No threats detected.", "security"), 2000);
+      } else {
+        logSystem(`Unknown command: ${parts[0]}`, "system");
+      }
+    }
+
+    function notify(title, msg) {
+      const area = document.getElementById('notification-area');
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.innerHTML = `
+        <div>
+          <div style="font-weight:bold; color:var(--neon-cyan); margin-bottom:2px;">${title}</div>
+          <div style="font-size:12px;">${msg}</div>
+        </div>
+        <div style="cursor:pointer; color:var(--neon-red);" onclick="this.parentElement.remove()">✕</div>
+      `;
+      area.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 4000);
+    }
+
+    /* ============================
+       AGENT SIMULATION
+       ============================ */
+    function agentLoop() {
+      // Random agent activity
+      const activeAgents = AGENTS.filter(a => a.active);
+      const agent = activeAgents[Math.floor(Math.random() * activeAgents.length)];
+      
+      const appIds = Object.keys(state.windows);
+      
+      if (agent.id === 'coord' && appIds.length > 0) {
+        const msgs = [
+          "Optimizing inter-process communication...",
+          "Balancing memory allocation across active apps.",
+          "Synchronizing data streams..."
+        ];
+        triggerAgentEvent('coord', msgs[Math.floor(Math.random() * msgs.length)]);
+      } 
+      else if (agent.id === 'data' && appIds.length > 1) {
+        triggerAgentEvent('data', `Analyzing interaction patterns between ${appIds.length} active modules.`);
+      }
+      else if (agent.id === 'sec') {
+        triggerAgentEvent('sec', "Firewall integrity verified. Packet filter active.");
+      }
+    }
+
+    function triggerAgentEvent(agentId, msg) {
+      logSystem(msg, 'agent');
+      // Trigger visualizer pulse
+      vizPulse();
+    }
+
+    /* ============================
+       VISUALIZERS (CANVAS)
+       ============================ */
+    
+    // --- Neural Background ---
+    function initNeuralBg() {
+      const canvas = document.getElementById('neural-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let nodes = [];
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initNodes();
+      }
+
+      function initNodes() {
+        nodes = [];
+        const count = Math.floor((width * height) / 15000);
+        for(let i=0; i<count; i++) {
+          nodes.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            size: Math.random() * 2 + 1
+          });
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        
+        // Update & Draw Nodes
+        ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
+        nodes.forEach((node, i) => {
+          node.x += node.vx;
+          node.y += node.vy;
+
+          if(node.x < 0 || node.x > width) node.vx *= -1;
+          if(node.y < 0 || node.y > height) node.vy *= -1;
+
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Connect
+          for(let j=i+1; j<nodes.length; j++) {
+            const other = nodes[j];
+            const dx = node.x - other.x;
+            const dy = node.y - other.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if(dist < 100) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(0, 255, 255, ${0.1 - dist/1000})`;
+              ctx.lineWidth = 1;
+              ctx.moveTo(node.x, node.y);
+              ctx.lineTo(other.x, other.y);
+              ctx.stroke();
+            }
+          }
+        });
+        
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+      draw();
+    }
+
+    // --- Comm Visualizer ---
+    function initCommViz() {
+      const canvas = document.getElementById('comm-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height;
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        width = canvas.width = rect.width;
+        height = canvas.height = rect.height;
+      }
+      
+      // Initial draw state
+      resize();
+      window.addEventListener('resize', resize);
+
+      function drawBase() {
+        ctx.clearRect(0, 0, width, height);
+        
+        // Draw grid
+        ctx.strokeStyle = 'rgba(255, 51, 102, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for(let x=0; x<width; x+=20) { ctx.moveTo(x, 0); ctx.lineTo(x, height); }
+        for(let y=0; y<height; y+=20) { ctx.moveTo(0, y); ctx.lineTo(width, y); }
+        ctx.stroke();
+      }
+
+      let activePackets = [];
+
+      function vizPulse() {
+        // Create a "packet" traveling across
+        const isVert = Math.random() > 0.5;
+        activePackets.push({
+          x: isVert ? Math.random() * width : 0,
+          y: isVert ? 0 : Math.random() * height,
+          vx: isVert ? 0 : (Math.random() * 2 + 2),
+          vy: isVert ? (Math.random() * 2 + 2) : 0,
+          life: 1.0
+        });
+      }
+
+      function animateViz() {
+        drawBase();
+
+        // Draw running app nodes
+        const apps = Object.keys(state.windows);
+        if (apps.length > 0) {
+          const step = width / (apps.length + 1);
+          apps.forEach((appId, i) => {
+            const x = step * (i + 1);
+            const y = height / 2;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI*2);
+            ctx.fillStyle = '#ff00ff';
+            ctx.fill();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ff00ff';
+          });
+          ctx.shadowBlur = 0;
+        }
+
+        // Draw Packets
+        for(let i = activePackets.length - 1; i >= 0; i--) {
+          const p = activePackets[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life -= 0.02;
+
+          if(p.life <= 0) {
+            activePackets.splice(i, 1);
+            continue;
+          }
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+          ctx.fillStyle = `rgba(255, 255, 0, ${p.life})`;
+          ctx.fill();
+        }
+
+        requestAnimationFrame(animateViz);
+      }
+
+      animateViz();
+    }
+
+    /* --- Window Dragging Logic for Panels --- */
+    // Making the console draggable
+    makeDraggable(document.getElementById('agent-console'), document.querySelector('#agent-console .panel-header'));
+
+    // Initialize System
+    window.onload = init;
+
+  </script>
+</body>
+</html>
